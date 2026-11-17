@@ -4,14 +4,71 @@
 //   tees           the trip's days (rounds) -> each player's tee
 //   the course     courses/{id} for the days' course, hole by hole
 //   the teams      worked out here from the field (proposed until they're set)
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js';
-import { getAuth, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js';
-import { getFirestore, collection, doc, getDoc, getDocs } from 'https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js';
+//
+// It talks to the database directly (Firestore's REST API) rather than loading
+// the Firebase toolkit: four small requests instead of a megabyte of code and a
+// few dozen round trips, which matters on a phone. The last field it showed is
+// kept on the phone, so a repeat visit shows it at once and then refreshes it.
 
 const TRIP = 'oODl7OvXVvlFOYDvB4LT'; // Winter Classic, code WCDREI
-const app = initializeApp({ apiKey: 'AIzaSyCkj6gYcGJmZrDELoFV8o7OW3_5YSmY2z0', authDomain: 'golf-tournament-app-e2390.firebaseapp.com', projectId: 'golf-tournament-app-e2390' });
-const auth = getAuth(app);
-const db = getFirestore(app);
+const KEY = 'AIzaSyCkj6gYcGJmZrDELoFV8o7OW3_5YSmY2z0';
+const DOCS = 'https://firestore.googleapis.com/v1/projects/golf-tournament-app-e2390/databases/(default)/documents';
+const NAME = path => `projects/golf-tournament-app-e2390/databases/(default)/documents/${path}`;
+
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode */ } },
+};
+
+/** An anonymous sign-in (the database only answers signed-in visitors), kept on the phone and renewed when it runs out */
+async function idToken() {
+  const saved = store.get('wc-auth');
+  if (saved?.idToken && saved.expires > Date.now() + 60000) return saved.idToken;
+  let r;
+  if (saved?.refreshToken) {
+    r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${KEY}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(saved.refreshToken)}`,
+    });
+    if (r.ok) {
+      const j = await r.json();
+      store.set('wc-auth', { idToken: j.id_token, refreshToken: j.refresh_token, expires: Date.now() + j.expires_in * 1000 });
+      return j.id_token;
+    }
+  }
+  r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${KEY}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ returnSecureToken: true }),
+  });
+  if (!r.ok) throw new Error(`sign-in ${r.status}`);
+  const j = await r.json();
+  store.set('wc-auth', { idToken: j.idToken, refreshToken: j.refreshToken, expires: Date.now() + j.expiresIn * 1000 });
+  return j.idToken;
+}
+
+/** Firestore's typed values ({ stringValue: 'x' }, { mapValue: { fields } }...) as plain values */
+function plain(v) {
+  if (!v) return null;
+  if ('stringValue' in v) return v.stringValue;
+  if ('integerValue' in v) return Number(v.integerValue);
+  if ('doubleValue' in v) return Number(v.doubleValue);
+  if ('booleanValue' in v) return v.booleanValue;
+  if ('nullValue' in v) return null;
+  if ('timestampValue' in v) return v.timestampValue;
+  if ('referenceValue' in v) return v.referenceValue;
+  if ('arrayValue' in v) return (v.arrayValue.values || []).map(plain);
+  if ('mapValue' in v) return fields(v.mapValue.fields);
+  return null;
+}
+const fields = f => Object.fromEntries(Object.entries(f || {}).map(([k, v]) => [k, plain(v)]));
+const idOf = name => name.split('/').pop();
+
+async function api(token, path, body) {
+  const r = await fetch(`${DOCS}${path}`, body
+    ? { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    : { headers: { Authorization: `Bearer ${token}` } });
+  if (!r.ok) throw new Error(`${path} ${r.status}`);
+  return r.json();
+}
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -23,16 +80,24 @@ const courseHandicap = (hi, tee) => (hi == null || !tee ? null
   : Math.round(Math.round((hi * tee.slope_rating / 113 + (tee.course_rating - (tee.par_total || 72))) * 10) / 10));
 
 async function load() {
-  const trip = (await getDoc(doc(db, 'tournaments', TRIP))).data();
-  if (!trip) throw new Error('trip not found');
-  const rounds = (await getDocs(collection(db, 'tournaments', TRIP, 'rounds'))).docs
-    .map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.roundNumber || 0) - (b.roundNumber || 0));
+  const token = await idToken();
+  // The trip and its days together, then the course and every player in one go
+  const [tripDoc, roundList] = await Promise.all([
+    api(token, `/tournaments/${TRIP}`),
+    api(token, `/tournaments/${TRIP}/rounds?pageSize=50`),
+  ]);
+  const trip = fields(tripDoc.fields);
+  const rounds = (roundList.documents || []).map(d => ({ id: idOf(d.name), ...fields(d.fields) }))
+    .sort((a, b) => (a.roundNumber || 0) - (b.roundNumber || 0));
   const courseId = rounds.find(r => r.courseId)?.courseId;
-  const course = courseId ? (await getDoc(doc(db, 'courses', courseId))).data() : null;
-  const players = (await Promise.all((trip.players || []).map(async id => {
-    const p = (await getDoc(doc(db, 'players', id))).data();
+  const wanted = [...(courseId ? [NAME(`courses/${courseId}`)] : []), ...(trip.players || []).map(id => NAME(`players/${id}`))];
+  const got = wanted.length ? await api(token, ':batchGet', { documents: wanted }) : [];
+  const found = Object.fromEntries(got.filter(x => x.found).map(x => [x.found.name, fields(x.found.fields)]));
+  const course = courseId ? found[NAME(`courses/${courseId}`)] || null : null;
+  const players = (trip.players || []).map(id => {
+    const p = found[NAME(`players/${id}`)];
     return p ? { id, name: `${p.firstName || ''} ${p.lastName || ''}`.trim(), hi: typeof p.handicapIndex === 'number' ? p.handicapIndex : null } : null;
-  }))).filter(Boolean);
+  }).filter(Boolean);
 
   // Each player's tee on Day 1 (everyone on the III tees for now)
   const first = rounds[0];
@@ -42,7 +107,11 @@ async function load() {
   };
   players.forEach(p => { p.tee = teeOf(p.id); p.ch = courseHandicap(p.hi, p.tee); });
   const mainTee = players.map(p => p.tee).find(Boolean) || course?.tees?.male?.find(t => t.tee_name === 'III');
+  show({ course, mainTee, players });
+  store.set('wc-field', { course, mainTee, players });
+}
 
+function show({ course, mainTee, players }) {
   showCourse(course, mainTee);
   showField(players);
   showTeams(players);
@@ -137,10 +206,12 @@ function showTeams(players) {
     + 'Worked out from the field as it stands, so they can shift while indexes move until November 23.';
 }
 
-onAuthStateChanged(auth, user => {
-  if (!user) { signInAnonymously(auth).catch(e => console.error(e)); return; }
-  load().catch(e => {
-    console.error('Live details not loaded:', e);
+// What this phone saw last time, straight away; then the latest from the app
+const last = store.get('wc-field');
+if (last?.players?.length) { try { show(last); } catch (e) { /* redrawn below */ } }
+load().catch(e => {
+  console.error('Live details not loaded:', e);
+  if (!last?.players?.length) {
     ['flights', 'team-grid'].forEach(id => { $(id).innerHTML = '<div class="loading">Couldn\'t reach the app just now. Refresh to try again.</div>'; });
-  });
+  }
 });
