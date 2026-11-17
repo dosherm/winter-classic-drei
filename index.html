@@ -44,7 +44,10 @@
   /* Reduce Motion: the snow stays on the page, still */
   @media (prefers-reduced-motion: reduce) { .flake { animation: none; } }
   /* Part DREI with clinking mugs */
-  .part { display: inline-flex; align-items: center; gap: 14px; margin-top: 10px; font-weight: 800; letter-spacing: .45em; font-size: clamp(1.1rem, 3.6vw, 1.6rem); padding: 8px 10px 8px 22px; border: 3px solid var(--ink); border-radius: 999px; background: var(--snow); }
+  .part:hover { box-shadow: 0 0 0 4px var(--ice); }
+  .part:active { transform: scale(.97); }
+  .part:focus-visible { outline: 3px solid var(--steel); outline-offset: 3px; }
+  .part { font: inherit; color: var(--ink); cursor: pointer; -webkit-tap-highlight-color: transparent; display: inline-flex; align-items: center; gap: 14px; margin-top: 10px; font-weight: 800; letter-spacing: .45em; font-size: clamp(1.1rem, 3.6vw, 1.6rem); padding: 8px 10px 8px 22px; border: 3px solid var(--ink); border-radius: 999px; background: var(--snow); }
   .mugs { display: inline-flex; font-size: 1.5em; line-height: 1; letter-spacing: 0; position: relative; }
   .mug { display: inline-block; animation: clinkL 2.4s ease-in-out infinite; transform-origin: 50% 90%; }
   .mug.r { animation-name: clinkR; margin-left: -6px; }
@@ -156,7 +159,8 @@
   <div class="eyebrow">Bourbon &amp; Bogeys present</div>
   <h1>Winter Classic · Part DREI</h1>
   <img class="logo" src="logo.png" width="1100" height="794" alt="Winter Classic">
-  <div class="part">PART DREI <span class="mugs" aria-hidden="true"><span class="mug">🍺</span><span class="spark">✨</span><span class="mug r">🍺</span></span></div>
+  <button type="button" class="part" id="drei" aria-label="Part DREI: play the announcement">PART DREI <span class="mugs" aria-hidden="true"><span class="mug">🍺</span><span class="spark">✨</span><span class="mug r">🍺</span></span></button>
+  <audio id="drei-audio" src="drei.mp3" preload="auto"></audio>
   <div class="hero-meta">December 4 – 6, 2026 · Webbs Reserve · Punta Gorda, Florida</div>
   <div class="countdown" id="countdown" aria-label="Countdown to the first tee">
     <div class="cd"><b id="cd-d">–</b><small>Days</small></div>
@@ -365,6 +369,16 @@
       f.style.opacity = (.7 + Math.random() * .3).toFixed(2);
       box.appendChild(f);
     }
+  })();
+  // PART DREI: tap it (or the mugs) to hear the announcement
+  (() => {
+    const btn = document.getElementById('drei');
+    const audio = document.getElementById('drei-audio');
+    btn.addEventListener('click', () => {
+      try { audio.currentTime = 0; } catch (e) {}
+      const p = audio.play();
+      if (p && p.catch) p.catch(() => {});
+    });
   })();
   // Countdown to Friday Dec 4, 10:30 am Eastern
   (() => {
