@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Winter Classic · Part DREI</title>
+<meta name="description" content="Winter Classic Part DREI · Webbs Reserve, Punta Gorda FL · December 4–6, 2026">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Yellowtail&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #1d1d1f;
+    --deep: #2b3a44;
+    --ice: #c3dbe6;
+    --frost: #f2f8fb;
+    --snow: #ffffff;
+    --glacier: #8fb9cd;
+    --steel: #4f7f97;
+    --ink: #1d1d1f;
+    --muted: #5d6b74;
+    --line: #d6e6ee;
+    --gold: #e0a526;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; overflow-x: hidden; font-family: Montserrat, system-ui, sans-serif; color: var(--ink); background: var(--frost); line-height: 1.55; }
+  h1, h2, h3 { font-family: Yellowtail, cursive; font-weight: 700; margin: 0; }
+  a { color: var(--steel); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+  /* Hero */
+  #hero { position: relative; overflow: hidden; color: var(--ink); text-align: center;
+    background: linear-gradient(180deg, #a9cadb 0%, var(--ice) 45%, var(--frost) 100%); padding: 56px 20px 90px; }
+  #hero::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 60px;
+    background: var(--snow); clip-path: polygon(0 60%, 12% 30%, 24% 55%, 38% 20%, 52% 50%, 66% 25%, 80% 55%, 92% 35%, 100% 50%, 100% 100%, 0 100%); }
+  .logo { width: min(520px, 86vw); height: auto; display: block; margin: 8px auto 0; filter: drop-shadow(0 10px 24px rgba(29,29,31,.18)); }
+  /* Snow over the whole page */
+  .snow { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
+  .flake { position: absolute; top: -20px; color: #fff; text-shadow: 0 0 3px rgba(43,58,68,.55); animation: fall linear infinite; will-change: transform; }
+  @keyframes fall { to { transform: translate3d(var(--drift, 30px), 108vh, 0) rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .flake { display: none; } }
+  /* Part DREI with clinking mugs */
+  .part { display: inline-flex; align-items: center; gap: 14px; margin-top: 10px; font-weight: 800; letter-spacing: .45em; font-size: clamp(1.1rem, 3.6vw, 1.6rem); padding: 8px 10px 8px 22px; border: 3px solid var(--ink); border-radius: 999px; background: var(--snow); }
+  .mugs { display: inline-flex; font-size: 1.5em; line-height: 1; letter-spacing: 0; position: relative; }
+  .mug { display: inline-block; animation: clinkL 2.4s ease-in-out infinite; transform-origin: 50% 90%; }
+  .mug.r { animation-name: clinkR; margin-left: -6px; }
+  .mugs .spark { position: absolute; left: 50%; top: -12px; transform: translateX(-50%) scale(0); font-size: .55em; animation: spark 2.4s ease-in-out infinite; }
+  @keyframes clinkL { 0%, 30%, 100% { transform: rotate(-4deg) translateX(-6px); } 45%, 55% { transform: rotate(16deg) translateX(3px); } }
+  @keyframes clinkR { 0%, 30%, 100% { transform: scaleX(-1) rotate(-4deg) translateX(-6px); } 45%, 55% { transform: scaleX(-1) rotate(16deg) translateX(3px); } }
+  @keyframes spark { 0%, 42%, 70%, 100% { transform: translateX(-50%) scale(0); opacity: 0; } 50% { transform: translateX(-50%) scale(1.2); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .mug, .mugs .spark { animation: none; } }
+  .eyebrow { letter-spacing: .32em; text-transform: uppercase; font-size: .78rem; color: var(--deep); font-weight: 700; }
+  #hero h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .hero-meta { font-size: 1.05rem; color: var(--deep); margin-top: 18px; font-weight: 600; }
+  .countdown { display: inline-flex; gap: 14px; margin-top: 30px; position: relative; z-index: 1; }
+  .cd { background: var(--snow); border: 3px solid var(--ink); border-radius: 14px; padding: 10px 14px; min-width: 80px; }
+  .cd b { display: block; font-size: 1.8rem; font-weight: 800; }
+  .cd small { font-size: .68rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .countdown-label { margin-top: 12px; font-size: .85rem; color: var(--deep); font-weight: 600; position: relative; z-index: 1; }
+  nav.jump { position: relative; z-index: 1; margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  nav.jump a { color: var(--ink); background: var(--snow); text-decoration: none; font-size: .85rem; font-weight: 600; padding: 7px 14px; border: 2px solid var(--ink); border-radius: 999px; }
+  nav.jump a:hover { background: var(--ice); }
+
+  /* Sections */
+  section { padding: 64px 0; }
+  section { background: var(--snow); }
+  section.dark { background: radial-gradient(ellipse at 50% 0%, #34444f 0%, var(--night) 75%); color: var(--snow); }
+  .rule { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+  .rule::before, .rule::after { content: ''; flex: 1; height: 1px; background: currentColor; opacity: .2; }
+  .rule h2 { font-size: clamp(2.4rem, 6vw, 3.4rem); font-weight: 400; line-height: 1.1; }
+  section.dark .rule h2 { color: var(--snow); text-shadow: 3px 3px 0 #000; }
+  section:not(.dark) .rule h2 { color: var(--ink); text-shadow: 3px 3px 0 var(--ice); }
+  .kicker { text-align: center; font-size: .75rem; letter-spacing: .3em; text-transform: uppercase; color: var(--steel); font-weight: 700; }
+  section.dark .kicker { color: var(--glacier); }
+  .lead { text-align: center; color: var(--muted); max-width: 680px; margin: 10px auto 34px; }
+  section.dark .lead { color: var(--ice); }
+  .card { background: var(--snow); border: 3px solid var(--ink); border-radius: var(--radius); padding: 22px; box-shadow: 6px 6px 0 var(--ice); }
+  section.dark .card { background: rgba(195,219,230,.08); border: 2px solid var(--ice); box-shadow: none; }
+  .grid { display: grid; gap: 16px; }
+  .g3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .g4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+  /* Schedule */
+  .day-tag { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--glacier); font-weight: 700; }
+  .day-date { font-family: Yellowtail, cursive; font-size: 2.2rem; margin: 2px 0 6px; }
+  .day-row { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-top: 1px solid rgba(207,230,245,.15); font-size: .95rem; }
+  .day-row span:first-child { color: var(--ice); }
+
+  /* Course */
+  .course-head { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 760px) { .course-head { grid-template-columns: 1fr; } }
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat { background: var(--ice); border: 2px solid var(--ink); border-radius: 12px; padding: 12px; text-align: center; }
+  .stat b { display: block; font-size: 1.6rem; font-weight: 800; color: var(--ink); }
+  .stat small { color: var(--deep); font-weight: 700; font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; }
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table.holes { border-collapse: collapse; width: 100%; min-width: 760px; font-size: .88rem; text-align: center; }
+  table.holes th, table.holes td { padding: 7px 4px; border-bottom: 1px solid var(--line); }
+  table.holes th:first-child, table.holes td:first-child { text-align: left; font-weight: 600; color: var(--muted); padding-left: 0; }
+  table.holes tr.head th { background: var(--ink); color: var(--snow); }
+  table.holes tr.head th:first-child { background: var(--ink); color: var(--ice); padding-left: 8px; }
+  table.holes .tot { font-weight: 800; background: var(--ice); }
+  .tees { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .tee { font-size: .82rem; padding: 6px 10px; border-radius: 8px; background: var(--frost); border: 1px solid var(--line); }
+  .tee.ours { background: var(--ink); color: var(--snow); border-color: var(--ink); font-weight: 700; }
+
+  /* Field */
+  .flight h3 { font-size: 2rem; font-weight: 400; display: flex; align-items: baseline; gap: 10px; }
+  .flight h3 small { font-family: Montserrat, sans-serif; font-size: .75rem; color: var(--glacier); letter-spacing: .1em; text-transform: uppercase; font-weight: 600; }
+  .player { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 0; border-top: 1px solid rgba(207,230,245,.15); }
+  .player .nm { font-weight: 600; }
+  .player .hc { font-variant-numeric: tabular-nums; color: var(--ice); font-size: .9rem; white-space: nowrap; }
+  .player .hc b { color: var(--snow); }
+
+  /* Teams */
+  .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .tabs button { font: inherit; font-weight: 700; border: 2px solid var(--ink); background: var(--snow); color: var(--ink); padding: 9px 16px; border-radius: 999px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--ink); color: var(--snow); }
+  .team h3 { font-size: 1.8rem; font-weight: 400; display: flex; justify-content: space-between; align-items: baseline; }
+  .team h3 small { font-family: Montserrat, sans-serif; font-size: .8rem; color: var(--muted); font-weight: 600; }
+  .member { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: center; padding: 7px 0; border-top: 1px solid var(--line); font-size: .95rem; }
+  .fl { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: .72rem; font-weight: 800; border: 2px solid var(--ink); }
+  .fA { background: var(--ink); color: var(--snow); } .fB { background: var(--steel); color: var(--snow); } .fC { background: var(--ice); color: var(--ink); } .fD { background: var(--snow); color: var(--ink); }
+  .member .ch { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .note { font-size: .88rem; color: var(--muted); text-align: center; margin-top: 18px; }
+  .badge { display: inline-block; font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; font-weight: 800; color: var(--ink); background: var(--ice); border: 2px solid var(--ink); border-radius: 999px; padding: 3px 10px; }
+
+  /* Formats & rules */
+  .fmt .day-tag { color: var(--steel); }
+  .fmt h3 { font-size: 2.2rem; font-weight: 400; margin: 4px 0 8px; }
+  .fmt p { margin: 0 0 10px; color: #2f3a41; }
+  .pts { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  .pts td { padding: 5px 0; border-top: 1px solid var(--line); }
+  .pts td:last-child { text-align: right; font-weight: 700; }
+  .rules h3 { font-size: 1.9rem; font-weight: 400; margin-bottom: 8px; color: var(--ice); }
+  .rules ul { margin: 0; padding-left: 18px; }
+  .rules li { margin: 6px 0; }
+  .money { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 8px; }
+  .money div { text-align: center; padding: 16px 8px; border-radius: 14px; background: var(--snow); color: var(--ink); border: 3px solid var(--ice); }
+  .money b { display: block; font-size: 2rem; font-weight: 800; }
+  .money small { color: var(--deep); font-size: .8rem; font-weight: 600; }
+  .muted { color: var(--muted); }
+  .loading { text-align: center; color: var(--muted); padding: 20px; }
+  section.dark .loading { color: var(--ice); }
+  footer { text-align: center; padding: 34px 20px 50px; color: var(--muted); font-size: .85rem; }
+</style>
+</head>
+<body>
+
+<div class="snow" aria-hidden="true"></div>
+<header id="hero">
+  <div class="eyebrow">Bourbon &amp; Bogeys present</div>
+  <h1>Winter Classic · Part DREI</h1>
+  <img class="logo" src="logo.png" width="1100" height="794" alt="Winter Classic">
+  <div class="part">PART DREI <span class="mugs" aria-hidden="true"><span class="mug">🍺</span><span class="spark">✨</span><span class="mug r">🍺</span></span></div>
+  <div class="hero-meta">December 4 – 6, 2026 · Webbs Reserve · Punta Gorda, Florida</div>
+  <div class="countdown" id="countdown" aria-label="Countdown to the first tee">
+    <div class="cd"><b id="cd-d">–</b><small>Days</small></div>
+    <div class="cd"><b id="cd-h">–</b><small>Hours</small></div>
+    <div class="cd"><b id="cd-m">–</b><small>Minutes</small></div>
+  </div>
+  <div class="countdown-label">First tee · Friday 10:30 am</div>
+  <nav class="jump" aria-label="Sections">
+    <a href="#schedule">Schedule</a><a href="#course">The Course</a><a href="#field">The Field</a>
+    <a href="#teams">Teams</a><a href="#formats">Formats</a><a href="#rules">Rules &amp; Money</a>
+  </nav>
+</header>
+
+<section id="schedule" class="dark">
+  <div class="wrap">
+    <div class="kicker">Three days in the Florida "winter"</div>
+    <div class="rule"><h2>The Schedule</h2></div>
+    <p class="lead">Sixteen players, four teams a day, one course, and not a snowflake in sight.</p>
+    <div class="grid g3">
+      <div class="card">
+        <div class="day-tag">Day 1</div>
+        <div class="day-date">Friday · Dec 4</div>
+        <div class="day-row"><span>Tee time</span><span>10:30 am</span></div>
+        <div class="day-row"><span>Team game</span><span>Best Ball</span></div>
+        <div class="day-row"><span>Side games</span><span>Net Skins · Closest to the Pin</span></div>
+      </div>
+      <div class="card">
+        <div class="day-tag">Day 2</div>
+        <div class="day-date">Saturday · Dec 5</div>
+        <div class="day-row"><span>Tee time</span><span>10:30 am</span></div>
+        <div class="day-row"><span>Team game</span><span>30/40 Ball</span></div>
+        <div class="day-row"><span>Side games</span><span>Net Skins · Closest to the Pin</span></div>
+      </div>
+      <div class="card">
+        <div class="day-tag">Day 3</div>
+        <div class="day-date">Sunday · Dec 6</div>
+        <div class="day-row"><span>Tee time</span><span>8:30 am</span></div>
+        <div class="day-row"><span>Team game</span><span>Team Stableford</span></div>
+        <div class="day-row"><span>Side games</span><span>Net Skins · Closest to the Pin</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="course">
+  <div class="wrap">
+    <div class="kicker">All three days</div>
+    <div class="rule"><h2>The Course</h2></div>
+    <p class="lead">One course, three rounds. By Sunday you'll know every bunker by name.</p>
+    <div class="card">
+      <div class="course-head">
+        <div>
+          <h3 style="font-size:2rem" id="course-name">Webbs Reserve Golf Club</h3>
+          <p class="muted" style="margin:4px 0 12px" id="course-where">Punta Gorda, Florida</p>
+          <p style="margin:0">A Florida layout of wide fairways, water in play and greens that reward patience. Everyone plays the <b>III tees</b>: long enough to be honest, short enough to keep the cart girl busy.</p>
+        </div>
+        <div class="stats">
+          <div class="stat"><b id="st-yards">6,271</b><small>Yards (III)</small></div>
+          <div class="stat"><b id="st-par">72</b><small>Par</small></div>
+          <div class="stat"><b id="st-rating">69.8</b><small>Rating</small></div>
+          <div class="stat"><b id="st-slope">124</b><small>Slope</small></div>
+        </div>
+      </div>
+      <h3 style="font-size:1.4rem;margin:26px 0 10px">Hole by hole · III tees</h3>
+      <div class="scroll"><table class="holes" id="holes"><tbody><tr><td class="loading">Loading the card…</td></tr></tbody></table></div>
+      <div class="tees" id="tees"></div>
+    </div>
+  </div>
+</section>
+
+<section id="field" class="dark">
+  <div class="wrap">
+    <div class="kicker">Straight from the B&amp;B Golf app</div>
+    <div class="rule"><h2>The Field</h2></div>
+    <p class="lead">Four flights of four by handicap index, lowest first. Indexes follow GHIN every morning until they lock on <b>November 23</b>. Course handicaps are for the III tees at 100%.</p>
+    <div class="grid g4" id="flights"><div class="loading">Loading the field…</div></div>
+  </div>
+</section>
+
+<section id="teams">
+  <div class="wrap">
+    <div class="kicker"><span class="badge">Proposed</span></div>
+    <div class="rule"><h2>The Teams</h2></div>
+    <p class="lead">Every team has one A, one B, one C and one D. Over three days nobody plays with the same partner twice, and the team totals are kept as even as the field allows.</p>
+    <div class="tabs" role="tablist" id="team-tabs"></div>
+    <div class="grid g4" id="team-grid"><div class="loading">Working out the teams…</div></div>
+    <p class="note" id="team-note"></p>
+  </div>
+</section>
+
+<section id="formats" style="padding-top:20px">
+  <div class="wrap">
+    <div class="kicker">All games are net</div>
+    <div class="rule"><h2>Formats</h2></div>
+    <p class="lead">A different team game each day, with Net Skins and Closest to the Pin running alongside.</p>
+    <div class="grid g3">
+      <div class="card fmt">
+        <div class="day-tag">Day 1 · Friday</div>
+        <h3>Best Ball</h3>
+        <p>On every hole the team's best net score counts. Add up the 18 best balls; the lowest team total wins the day.</p>
+        <p class="muted">One good swing from anyone on the team saves the hole.</p>
+      </div>
+      <div class="card fmt">
+        <div class="day-tag">Day 2 · Saturday</div>
+        <h3>30/40 Ball</h3>
+        <p>Each team has 36 net scores per nine (9 per player) and must count exactly <b>20</b> of them. After each hole, before teeing off on the next, the team picks which balls count: anywhere from none to all four.</p>
+        <p class="muted">Each counted ball is scored against par. Lowest team total wins. Spend your good balls wisely.</p>
+      </div>
+      <div class="card fmt">
+        <div class="day-tag">Day 3 · Sunday</div>
+        <h3>Team Stableford</h3>
+        <p>Points instead of strokes. All four players earn net points on every hole and the team adds them up. Most points wins.</p>
+        <table class="pts">
+          <tr><td>Double bogey or worse</td><td>0</td></tr>
+          <tr><td>Bogey</td><td>1</td></tr>
+          <tr><td>Par</td><td>2</td></tr>
+          <tr><td>Birdie</td><td>3</td></tr>
+          <tr><td>Eagle</td><td>4</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="rules" class="dark">
+  <div class="wrap">
+    <div class="kicker">How it works</div>
+    <div class="rule"><h2>Rules &amp; Money</h2></div>
+    <p class="lead">$100 a man a day, $300 for the weekend.</p>
+    <div class="money">
+      <div><b>$60</b><small>Team game · $960 pot a day</small></div>
+      <div><b>$30</b><small>Net Skins · $480 pot a day</small></div>
+      <div><b>$10</b><small>Closest to the Pin · $160 pot a day</small></div>
+      <div><b>$300</b><small>Per player, three days</small></div>
+    </div>
+    <div class="grid g3 rules" style="margin-top:24px">
+      <div class="card">
+        <h3>Handicaps &amp; tees</h3>
+        <ul>
+          <li>Everyone plays the III tees (6,271 yards, 69.8 / 124).</li>
+          <li>Handicap index from GHIN, locked on November 23.</li>
+          <li>100% of course handicap in every game. Everything is net.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Net Skins · validated</h3>
+        <ul>
+          <li>Lowest net score on a hole, outright, wins the skin. Ties carry over.</li>
+          <li><b>Validation:</b> the winner must back it up with <b>net par or better on the next hole</b>, or the skin carries over.</li>
+          <li>No validation needed on 18. The day's pot is split by skins won.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Closest to the Pin</h3>
+        <ul>
+          <li>One winner on each par 3, every day.</li>
+          <li>The day's $160 is shared equally over the par 3s that are won.</li>
+          <li>Ball must be on the green.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Teams</h3>
+        <ul>
+          <li>Four teams of four each day: one player from each flight, A to D.</li>
+          <li>Teams change daily. No two players are teammates twice.</li>
+          <li>Final teams are set once handicaps lock on November 23.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Scores in the app</h3>
+        <ul>
+          <li>Join in the B&amp;B Golf app with invitation code <b>WCDREI</b>.</li>
+          <li>Enter scores hole by hole; games, skins and payouts update live.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Etiquette</h3>
+        <ul>
+          <li>Ready golf. Pick up when you're out of the hole.</li>
+          <li>Settle up Sunday. Complaints about the weather will not be heard.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>Winter Classic · Part DREI · Bourbon &amp; Bogeys · 2026</footer>
+
+<script>
+  // Snow
+  (() => {
+    const box = document.querySelector('.snow');
+    const n = window.innerWidth < 600 ? 35 : 70;
+    for (let i = 0; i < n; i++) {
+      const f = document.createElement('span');
+      f.className = 'flake';
+      f.textContent = Math.random() < .35 ? '❄' : '•';
+      f.style.setProperty('--drift', (Math.random() * 120 - 60) + 'px');
+      f.style.left = Math.random() * 100 + '%';
+      f.style.fontSize = (f.textContent === '•' ? 6 + Math.random() * 10 : 9 + Math.random() * 13) + 'px';
+      f.style.animationDuration = (8 + Math.random() * 12) + 's';
+      f.style.animationDelay = (-Math.random() * 20) + 's';
+      f.style.opacity = (.45 + Math.random() * .5).toFixed(2);
+      box.appendChild(f);
+    }
+  })();
+  // Countdown to Friday Dec 4, 10:30 am Eastern
+  (() => {
+    const start = new Date('2026-12-04T10:30:00-05:00').getTime();
+    const tick = () => {
+      const ms = Math.max(0, start - Date.now());
+      document.getElementById('cd-d').textContent = Math.floor(ms / 864e5);
+      document.getElementById('cd-h').textContent = Math.floor(ms / 36e5) % 24;
+      document.getElementById('cd-m').textContent = Math.floor(ms / 6e4) % 60;
+    };
+    tick(); setInterval(tick, 30000);
+  })();
+</script>
+<script type="module" src="live.js?v=20261117a"></script>
+</body>
+</html>
