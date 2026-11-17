@@ -42,8 +42,6 @@
   .snow { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
   .flake { position: absolute; top: -24px; color: #fff; text-shadow: 0 0 2px rgba(29,29,31,.75), 0 0 6px rgba(79,127,151,.9); animation: fall linear infinite; will-change: transform; }
   @keyframes fall { to { transform: translate3d(var(--drift, 30px), 108vh, 0) rotate(360deg); } }
-  /* Reduce Motion: the snow stays on the page, still */
-  @media (prefers-reduced-motion: reduce) { .flake { animation: none; } }
   /* Part DREI with clinking mugs */
   .part:hover { box-shadow: 0 0 0 4px var(--ice); }
   .part:active { transform: scale(.97); }
@@ -355,7 +353,6 @@
   (() => {
     const box = document.querySelector('.snow');
     const n = window.innerWidth < 600 ? 60 : 90;
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
     for (let i = 0; i < n; i++) {
       const f = document.createElement('span');
       f.className = 'flake';
@@ -363,7 +360,6 @@
       f.dataset.kind = f.textContent.length > 1 ? 'flake' : 'dot';
       f.style.setProperty('--drift', (Math.random() * 120 - 60) + 'px');
       f.style.left = Math.random() * 100 + '%';
-      if (still) f.style.top = Math.random() * 100 + '%';
       f.style.fontSize = (f.dataset.kind === 'dot' ? 10 + Math.random() * 10 : 14 + Math.random() * 14) + 'px';
       f.style.animationDuration = (8 + Math.random() * 12) + 's';
       f.style.animationDelay = (-Math.random() * 20) + 's';
