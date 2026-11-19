@@ -99,14 +99,14 @@ async function load() {
     return p ? { id, name: `${p.firstName || ''} ${p.lastName || ''}`.trim(), hi: typeof p.handicapIndex === 'number' ? p.handicapIndex : null } : null;
   }).filter(Boolean);
 
-  // Each player's tee on Day 1 (everyone on the III tees for now)
+  // Each player's tee on Day 1 (everyone on the II tees)
   const first = rounds[0];
   const teeOf = id => {
     const a = first?.playerAssignments?.[id];
     return a && course ? (course.tees?.[a.teeGender || 'male'] || [])[a.teeIndex ?? 0] : null;
   };
   players.forEach(p => { p.tee = teeOf(p.id); p.ch = courseHandicap(p.hi, p.tee); });
-  const mainTee = players.map(p => p.tee).find(Boolean) || course?.tees?.male?.find(t => t.tee_name === 'III');
+  const mainTee = players.map(p => p.tee).find(Boolean) || course?.tees?.male?.find(t => t.tee_name === 'II');
   show({ course, mainTee, players });
   store.set('wc-field', { course, mainTee, players });
 }
@@ -146,7 +146,7 @@ function showField(players) {
   $('flights').innerHTML = flights.map((list, i) => `<div class="card flight">
       <h3>Flight ${FLIGHTS[i]} <small>${list.length ? `${fmtIndex(list[0].hi)} – ${fmtIndex(list[list.length - 1].hi)}` : ''}</small></h3>
       ${list.map(p => `<div class="player"><span class="nm">${esc(p.name)}</span><span class="hc">${fmtIndex(p.hi)} · <b>${p.ch ?? '–'}</b></span></div>`).join('')}
-    </div>`).join('') + `<p class="note" style="grid-column:1/-1;color:var(--ice)">Index · <b style="color:#fff">course handicap</b> (III tees). ${players.length} players.</p>`;
+    </div>`).join('') + `<p class="note" style="grid-column:1/-1;color:var(--ice)">Index · <b style="color:#fff">course handicap</b> (II tees). ${players.length} players.</p>`;
 }
 
 // ---------- Proposed teams ----------
