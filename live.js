@@ -146,7 +146,7 @@ function showField(players) {
   $('flights').innerHTML = flights.map((list, i) => `<div class="card flight">
       <h3>Flight ${FLIGHTS[i]} <small>${list.length ? `${fmtIndex(list[0].hi)} – ${fmtIndex(list[list.length - 1].hi)}` : ''}</small></h3>
       ${list.map(p => `<div class="player"><span class="nm">${esc(p.name)}</span><span class="hc">${fmtIndex(p.hi)} · <b>${p.ch ?? '–'}</b></span></div>`).join('')}
-    </div>`).join('') + `<p class="note" style="grid-column:1/-1;color:var(--ice)">Index · <b style="color:#fff">course handicap</b> (II tees). ${players.length} players.</p>`;
+    </div>`).join('');
 }
 
 // ---------- Proposed teams ----------
