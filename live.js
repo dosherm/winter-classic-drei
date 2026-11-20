@@ -180,7 +180,7 @@ function proposeTeams(flights) {
     .sort((a, b) => a[0].hi - b[0].hi));
 }
 
-const DAYS = ['Day 1 · Fri · Best Ball', 'Day 2 · Sat · 30/40', 'Day 3 · Sun · Stableford'];
+const DAYS = ['Day 1 · Fri · Stableford', 'Day 2 · Sat · 30/40', 'Day 3 · Sun · Best Ball 3-3-2'];
 
 function showTeams(players) {
   const flights = flightsOf(players);

@@ -182,22 +182,22 @@
         <div class="day-tag">Day 1</div>
         <div class="day-date">Friday · Dec 4</div>
         <div class="day-row"><span>Tee time</span><span>10:30 am</span></div>
-        <div class="day-row"><span>Team game</span><span>Best Ball · best 2 of 4</span></div>
-        <div class="day-row"><span>Side games</span><span>Net Skins · Closest to the Pin</span></div>
+        <div class="day-row"><span>Team game</span><span>Team Stableford · 90%</span></div>
+        <div class="day-row"><span>Side games</span><span>Net Skins · Gross Skins · Closest to the Pin</span></div>
       </div>
       <div class="card">
         <div class="day-tag">Day 2</div>
         <div class="day-date">Saturday · Dec 5</div>
         <div class="day-row"><span>Tee time</span><span>10:30 am</span></div>
-        <div class="day-row"><span>Team game</span><span>30/40 Ball</span></div>
-        <div class="day-row"><span>Side games</span><span>Net Skins · Closest to the Pin</span></div>
+        <div class="day-row"><span>Team game</span><span>30/40 Ball · 100%</span></div>
+        <div class="day-row"><span>Side games</span><span>Net Skins · Gross Skins · Closest to the Pin</span></div>
       </div>
       <div class="card">
         <div class="day-tag">Day 3</div>
         <div class="day-date">Sunday · Dec 6</div>
         <div class="day-row"><span>Tee time</span><span>8:30 am</span></div>
-        <div class="day-row"><span>Team game</span><span>Team Stableford</span></div>
-        <div class="day-row"><span>Side games</span><span>Net Skins · Closest to the Pin</span></div>
+        <div class="day-row"><span>Team game</span><span>Best Ball 3-3-2 · 80%</span></div>
+        <div class="day-row"><span>Side games</span><span>Net Skins · Gross Skins · Closest to the Pin</span></div>
       </div>
     </div>
   </div>
@@ -251,15 +251,23 @@
 
 <section id="formats" style="padding-top:20px">
   <div class="wrap">
-    <div class="kicker">All games are net</div>
+    <div class="kicker">Team games are net</div>
     <div class="rule"><h2>Formats</h2></div>
-    <p class="lead">A different team game each day, with Net Skins and Closest to the Pin running alongside.</p>
+    <p class="lead">A different team game each day, with Net Skins, Gross Skins and Closest to the Pin running alongside.</p>
     <div class="grid g3">
       <div class="card fmt">
         <div class="day-tag">Day 1 · Friday</div>
-        <h3>Best Ball</h3>
-        <p>Best 2 of the four. On every hole the team's two best net scores count, added together. Add up all 18 holes; the lowest team total wins the day.</p>
-        <p class="muted">One good swing from anyone on the team saves the hole.</p>
+        <h3>Team Stableford</h3>
+        <p>Points instead of strokes, at <b>90%</b> of course handicap. All four players earn net points on every hole and the team adds them up. Most points wins.</p>
+        <table class="pts">
+          <tr><td>Double bogey or worse</td><td>−1</td></tr>
+          <tr><td>Bogey</td><td>0</td></tr>
+          <tr><td>Par</td><td>1</td></tr>
+          <tr><td>Birdie</td><td>3</td></tr>
+          <tr><td>Eagle or better</td><td>5</td></tr>
+          <tr><td>Hole in one</td><td>10</td></tr>
+        </table>
+        <p class="muted">Blow-ups cost you now. Points are on the net score; a hole in one is 10 however many strokes you get.</p>
       </div>
       <div class="card fmt">
         <div class="day-tag">Day 2 · Saturday</div>
@@ -269,15 +277,9 @@
       </div>
       <div class="card fmt">
         <div class="day-tag">Day 3 · Sunday</div>
-        <h3>Team Stableford</h3>
-        <p>Points instead of strokes. All four players earn net points on every hole and the team adds them up. Most points wins.</p>
-        <table class="pts">
-          <tr><td>Double bogey or worse</td><td>0</td></tr>
-          <tr><td>Bogey</td><td>1</td></tr>
-          <tr><td>Par</td><td>2</td></tr>
-          <tr><td>Birdie</td><td>3</td></tr>
-          <tr><td>Eagle</td><td>4</td></tr>
-        </table>
+        <h3>Best Ball 3-3-2</h3>
+        <p>At <b>80%</b> of course handicap. On par 3s and par 4s the team's <b>best 3</b> net scores count; on par 5s the <b>best 2</b>, added together. Add up all 18 holes; the lowest team total against par wins the day.</p>
+        <p class="muted">Only one score gets thrown out on most holes. Everybody matters.</p>
       </div>
     </div>
   </div>
@@ -287,12 +289,13 @@
   <div class="wrap">
     <div class="kicker">How it works</div>
     <div class="rule"><h2>Rules &amp; Money</h2></div>
-    <p class="lead">$100 a man a day, $300 for the weekend.</p>
+    <p class="lead">$110 a man a day, $330 for the weekend.</p>
     <div class="money">
       <div><b>$60</b><small>Team game · $960 pot a day</small></div>
-      <div><b>$30</b><small>Net Skins · $480 pot a day</small></div>
+      <div><b>$25</b><small>Net Skins · $400 pot a day</small></div>
+      <div><b>$15</b><small>Gross Skins · $240 pot a day</small></div>
       <div><b>$10</b><small>Closest to the Pin · $160 pot a day</small></div>
-      <div><b>$300</b><small>Per player, three days</small></div>
+      <div><b>$330</b><small>Per player, three days</small></div>
     </div>
     <div class="grid g3 rules" style="margin-top:24px">
       <div class="card">
@@ -300,7 +303,8 @@
         <ul>
           <li>Everyone plays the II tees (6,626 yards, 71.4 / 130).</li>
           <li>Handicap index from GHIN, locked on November 23.</li>
-          <li>100% of course handicap in every game. Everything is net.</li>
+          <li>Team games: <b>90%</b> of course handicap on Day 1, <b>100%</b> on Day 2, <b>80%</b> on Day 3.</li>
+          <li>Net Skins uses 100%. Gross Skins uses no handicap at all.</li>
         </ul>
       </div>
       <div class="card">
@@ -308,7 +312,15 @@
         <ul>
           <li>Lowest net score on a hole, outright, wins the skin. A tie means no one wins that hole.</li>
           <li><b>Validation:</b> the winner must back it up with <b>net par or better on the next hole</b>. If not, that skin pays nothing and the next skin won is worth double. Everyone gets a notification when it happens.</li>
-          <li>No validation needed on 18. A skin is worth the day's pot divided by the skins won: with 4 skins won, $120 each. If the 2nd isn't backed up: $120, $0, $240, $120.</li>
+          <li>No validation needed on 18. A skin is worth the day's $400 pot divided by the skins won: with 4 skins won, $100 each. If the 2nd isn't backed up: $100, $0, $200, $100.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Gross Skins · validated</h3>
+        <ul>
+          <li>Same as Net Skins, with no handicap strokes: lowest actual score on a hole, outright, wins. A tie means no one wins that hole.</li>
+          <li><b>Validation:</b> the winner must back it up with <b>par or better on the next hole</b>, or that skin pays nothing and the next skin won is worth double. None needed on 18.</li>
+          <li>The day's $240 pot is divided by the skins won.</li>
         </ul>
       </div>
       <div class="card">
@@ -388,6 +400,6 @@
     tick(); setInterval(tick, 30000);
   })();
 </script>
-<script type="module" src="live.js?v=20261119a"></script>
+<script type="module" src="live.js?v=20261120a"></script>
 </body>
 </html>
