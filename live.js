@@ -1,9 +1,10 @@
 // The Winter Classic page reads everything about the players and the course
 // from the B&B Golf app, so the trip's player list in the app is the only list:
-//   the field      tournaments/{id}.players -> players/{id} (name, GHIN index)
-//   tees           the trip's days (rounds) -> each player's tee
+//   the field      tournaments/{id}.players -> players/{id} (names)
+//   handicaps      locked November 23: the index below (LOCKED) and each player's
+//                  course handicap saved on Day 1 (rounds -> playerAssignments)
 //   the course     courses/{id} for the days' course, hole by hole
-//   the teams      worked out here from the field (proposed until they're set)
+//   the teams      each day's tee pairings in the app (rounds -> groups)
 //
 // It talks to the database directly (Firestore's REST API) rather than loading
 // the Firebase toolkit: four small requests instead of a megabyte of code and a
@@ -75,9 +76,33 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const fmtIndex = n => (n == null ? '–' : n < 0 ? `+${(-n).toFixed(1)}` : n.toFixed(1));
 const FLIGHTS = ['A', 'B', 'C', 'D'];
 
-/** Course handicap as the app works it out: index × slope/113 + (rating − par), to the nearest stroke */
+// Handicap indexes as they locked on November 23 (GHIN that morning). They're kept
+// here because a few players are also on other trips whose indexes keep following GHIN.
+const LOCKED = {
+  HVvKttssoxeZucwrBabU: 4.5,  // Ricky Carraher
+  '5h10jyCYkaV8MSGgunw7': 5.0, // Ron Carraher
+  uogK7P75rlPhEtj0STDN: 5.3,  // Bill Gomez
+  NeyiBIiUfQow3T9R3t1l: 7.6,  // Bret Bologna
+  MhVvRwqjFDQk261EAZkV: 8.5,  // Dan Sherman
+  XhFeBDsYUjcmGqLjIB01: 9.0,  // Kevin Livesay
+  Ns61OAOb7CqJB1l4Natj: 9.5,  // John Ziolkowski
+  WZ4hEukIl2Uxg8VpLI22: 9.9,  // Doug Ehens
+  eft3Hy1J68Z0boKDyCTi: 11.2, // Ruben Hernandez
+  '5gHl12dhldsTx5giPRnB': 11.3, // Kevin Sullivan
+  '40JaINZy6aNcZNPjG7nO': 12.2, // Hunter Carmichael
+  cpExV97QFdlMnOB3fpPF: 13.1, // Dan Darlson
+  ozDRz3Jzfh1E3IanxcsH: 14.8, // Ray Govert
+  pwJLZUSoWUmlGGUP3sMs: 16.8, // Jeff Gallisdorfer
+  rfmEwHxhguxQCSeKOf68: 18.7, // John Supan
+  '2f44zJHuc80yw9JYSaRO': 22.7, // Cihan Ozdemir
+};
+
+/** Course handicap: index × slope/113 + (rating − par), to the nearest stroke (only if the app has none saved) */
 const courseHandicap = (hi, tee) => (hi == null || !tee ? null
-  : Math.round(Math.round((hi * tee.slope_rating / 113 + (tee.course_rating - (tee.par_total || 72))) * 10) / 10));
+  : Math.round(hi * tee.slope_rating / 113 + (tee.course_rating - (tee.par_total || 72))));
+
+const DAYS = ['Day 1 · Fri · Stableford', 'Day 2 · Sat · 30/40', 'Day 3 · Sun · Best Ball 3-3-2'];
+const fmtTime = t => String(t || '').replace(/\s*AM$/i, ' am').replace(/\s*PM$/i, ' pm');
 
 async function load() {
   const token = await idToken();
@@ -94,27 +119,31 @@ async function load() {
   const got = wanted.length ? await api(token, ':batchGet', { documents: wanted }) : [];
   const found = Object.fromEntries(got.filter(x => x.found).map(x => [x.found.name, fields(x.found.fields)]));
   const course = courseId ? found[NAME(`courses/${courseId}`)] || null : null;
-  const players = (trip.players || []).map(id => {
-    const p = found[NAME(`players/${id}`)];
-    return p ? { id, name: `${p.firstName || ''} ${p.lastName || ''}`.trim(), hi: typeof p.handicapIndex === 'number' ? p.handicapIndex : null } : null;
-  }).filter(Boolean);
-
-  // Each player's tee on Day 1 (everyone on the II tees)
   const first = rounds[0];
   const teeOf = id => {
     const a = first?.playerAssignments?.[id];
     return a && course ? (course.tees?.[a.teeGender || 'male'] || [])[a.teeIndex ?? 0] : null;
   };
-  players.forEach(p => { p.tee = teeOf(p.id); p.ch = courseHandicap(p.hi, p.tee); });
-  const mainTee = players.map(p => p.tee).find(Boolean) || course?.tees?.male?.find(t => t.tee_name === 'II');
-  show({ course, mainTee, players });
-  store.set('wc-field', { course, mainTee, players });
+  const players = (trip.players || []).map(id => {
+    const p = found[NAME(`players/${id}`)];
+    if (!p) return null;
+    const hi = LOCKED[id] ?? (typeof p.handicapIndex === 'number' ? p.handicapIndex : null);
+    const saved = first?.playerAssignments?.[id]?.courseHandicap;
+    return { id, name: `${p.firstName || ''} ${p.lastName || ''}`.trim(), hi, ch: typeof saved === 'number' ? Math.round(saved) : courseHandicap(hi, teeOf(id)) };
+  }).filter(Boolean);
+  // The teams: each day's tee pairings, in order
+  const days = rounds.slice(0, 3).map(r => [...(r.groups || [])]
+    .sort((a, b) => (a.groupNumber || 0) - (b.groupNumber || 0))
+    .map((g, i) => ({ name: g.name || `Team ${i + 1}`, teeTime: g.teeTime || '', players: g.players || [] })));
+  const mainTee = players.map(p => teeOf(p.id)).find(Boolean) || course?.tees?.male?.find(t => t.tee_name === 'II');
+  show({ course, mainTee, players, days });
+  store.set('wc-field2', { course, mainTee, players, days });
 }
 
-function show({ course, mainTee, players }) {
+function show({ course, mainTee, players, days }) {
   showCourse(course, mainTee);
   showField(players);
-  showTeams(players);
+  showTeams(players, days || []);
 }
 
 function showCourse(course, tee) {
@@ -149,81 +178,56 @@ function showField(players) {
     </div>`).join('');
 }
 
-// ---------- Proposed teams ----------
-// One player per flight on every team, and no two players teammates twice: the
-// teams are the lines of the 4×4 grid (flights × places) in three of its four
-// "slope" directions over GF(4), so any two lines meet at most once. Every way of
-// ordering the players inside flights B, C and D is tried, and the most even
-// set of team totals (course handicaps) is kept.
-const MUL = [[0, 0, 0, 0], [0, 1, 2, 3], [0, 2, 3, 1], [0, 3, 1, 2]];
-const perms4 = (() => { const out = []; const go = (a, rest) => rest.length ? rest.forEach((x, i) => go([...a, x], rest.filter((_, j) => j !== i))) : out.push(a); go([], [0, 1, 2, 3]); return out; })();
-const SLOPE_SETS = [[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]];
+// ---------- The teams (each day's tee pairings in the app) ----------
+let pick = null; // the player picked in "Find your teams"
+try { pick = localStorage.getItem('wc-me'); } catch (e) { /* private mode */ }
 
-// Players who must be teammates on one of the three days (player ids)
-const TOGETHER = [
-  ['MhVvRwqjFDQk261EAZkV', 'NeyiBIiUfQow3T9R3t1l'], // Dan Sherman + Bret Bologna
-  ['MhVvRwqjFDQk261EAZkV', '5h10jyCYkaV8MSGgunw7'], // Dan Sherman + Ron Carraher
-  ['MhVvRwqjFDQk261EAZkV', 'HVvKttssoxeZucwrBabU'], // Dan Sherman + Ricky Carraher
-];
-
-function proposeTeams(flights) {
-  const ch = flights.map(f => f.map(p => p.ch ?? 0));
-  const avg = ch.flat().reduce((s, n) => s + n, 0) / 4;
-  const ids = flights.map(f => f.map(p => p.id));
-  const wanted = TOGETHER.filter(pair => pair.every(id => ids.flat().includes(id)));
-  // Every wanted pair on the same team on some day
-  const keeps = (order, slopes) => wanted.every(([a, b]) => slopes.some(m => [0, 1, 2, 3].some(t => {
-    const team = [0, 1, 2, 3].map(x => ids[x][order[x][MUL[m][x] ^ t]]);
-    return team.includes(a) && team.includes(b);
-  })));
-  let best = null;
-  for (const pB of perms4) for (const pC of perms4) for (const pD of perms4) {
-    const order = [[0, 1, 2, 3], pB, pC, pD];
-    for (const slopes of SLOPE_SETS) {
-      if (!keeps(order, slopes)) continue;
-      let lo = Infinity, hi = -Infinity, sq = 0;
-      for (const m of slopes) for (let b = 0; b < 4; b++) {
-        let s = 0;
-        for (let x = 0; x < 4; x++) s += ch[x][order[x][MUL[m][x] ^ b]];
-        if (s < lo) lo = s; if (s > hi) hi = s; sq += (s - avg) ** 2;
-      }
-      const score = (hi - lo) * 1e4 + sq;
-      if (!best || score < best.score) best = { score, order, slopes };
-    }
-  }
-  if (!best && wanted.length) { TOGETHER.length = 0; return proposeTeams(flights); } // can't be done: drop the wish
-  return best.slopes.map(m => [0, 1, 2, 3].map(b => [0, 1, 2, 3].map(x => flights[x][best.order[x][MUL[m][x] ^ b]]))
-    .sort((a, b) => a[0].hi - b[0].hi));
-}
-
-const DAYS = ['Day 1 · Fri · Stableford', 'Day 2 · Sat · 30/40', 'Day 3 · Sun · Best Ball 3-3-2'];
-
-function showTeams(players) {
-  const flights = flightsOf(players);
-  if (players.length !== 16 || flights.some(f => f.length !== 4)) {
-    $('team-grid').innerHTML = `<div class="loading">Teams are proposed once the field is 16 players (${players.length} now).</div>`;
+function showTeams(players, days) {
+  flightsOf(players); // sets each player's flight
+  const byId = Object.fromEntries(players.map(p => [p.id, p]));
+  if (!days.length || days.some(d => !d.length)) {
+    $('team-grid').innerHTML = '<div class="loading">The teams are being loaded into the app.</div>';
+    $('team-tabs').innerHTML = ''; $('team-find').innerHTML = ''; $('team-note').textContent = '';
     return;
   }
-  const days = proposeTeams(flights);
-  const totals = days.flat().map(t => t.reduce((s, p) => s + (p.ch ?? 0), 0));
-  const draw = d => {
-    [...$('team-tabs').children].forEach((b, i) => b.setAttribute('aria-selected', String(i === d)));
-    $('team-grid').innerHTML = days[d].map((team, i) => {
-      const total = team.reduce((s, p) => s + (p.ch ?? 0), 0);
-      return `<div class="card team"><h3>Team ${i + 1} <small>Total ${total}</small></h3>
-        ${team.map(p => `<div class="member"><span class="fl f${p.flight}">${p.flight}</span><span>${esc(p.name)}</span><span class="ch">${p.ch ?? '–'}</span></div>`).join('')}
-      </div>`;
+  const total = team => team.players.reduce((s, id) => s + (byId[id]?.ch ?? 0), 0);
+  let day = 0;
+  const draw = () => {
+    [...$('team-tabs').children].forEach((b, i) => b.setAttribute('aria-selected', String(i === day)));
+    $('team-grid').innerHTML = days[day].map(team => `<div class="card team${team.players.includes(pick) ? ' mine' : ''}">
+        <h3>${esc(team.name)} <small>${team.teeTime ? `${esc(fmtTime(team.teeTime))} · ` : ''}Total ${total(team)}</small></h3>
+        ${team.players.map(id => byId[id]).filter(Boolean).sort((a, b) => FLIGHTS.indexOf(a.flight) - FLIGHTS.indexOf(b.flight))
+          .map(p => `<div class="member${p.id === pick ? ' me' : ''}"><span class="fl f${p.flight}">${p.flight}</span><span>${esc(p.name)}</span><span class="ch">${p.ch ?? '–'}</span></div>`).join('')}
+      </div>`).join('');
+  };
+  const drawMine = () => {
+    const me = byId[pick];
+    if (!me) { $('team-mine').innerHTML = ''; return; }
+    $('team-mine').innerHTML = days.map((d, i) => {
+      const team = d.find(t => t.players.includes(me.id));
+      if (!team) return '';
+      const mates = team.players.filter(id => id !== me.id).map(id => byId[id]?.name).filter(Boolean);
+      return `<li><b>${esc(DAYS[i])}</b> · ${esc(team.name)}${team.teeTime ? `, ${esc(fmtTime(team.teeTime))}` : ''}<br>with ${esc(mates.join(', '))}</li>`;
     }).join('');
   };
-  $('team-tabs').innerHTML = DAYS.map((label, i) => `<button role="tab" type="button">${label}</button>`).join('');
-  [...$('team-tabs').children].forEach((b, i) => b.addEventListener('click', () => draw(i)));
-  draw(0);
-  $('team-note').textContent = `Team totals (course handicaps) run ${Math.min(...totals)} to ${Math.max(...totals)}. `
-    + 'Handicaps locked on November 23. Dan Sherman plays once each with Ricky Carraher, Ron Carraher and Bret Bologna.';
+  $('team-tabs').innerHTML = DAYS.map(label => `<button role="tab" type="button">${label}</button>`).join('');
+  [...$('team-tabs').children].forEach((b, i) => b.addEventListener('click', () => { day = i; draw(); }));
+  const names = [...players].sort((a, b) => a.name.localeCompare(b.name));
+  $('team-find').innerHTML = `<label for="team-me">Find your teams</label>
+    <select id="team-me"><option value="">Pick your name</option>${names.map(p => `<option value="${esc(p.id)}"${p.id === pick ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select>
+    <ul id="team-mine"></ul>`;
+  $('team-me').addEventListener('change', e => {
+    pick = e.target.value || null;
+    try { pick ? localStorage.setItem('wc-me', pick) : localStorage.removeItem('wc-me'); } catch (err) { /* private mode */ }
+    drawMine(); draw();
+  });
+  draw(); drawMine();
+  const totals = days.flat().map(total);
+  $('team-note').textContent = `Teams and handicaps are locked (November 23) and match the app. Team totals (course handicaps) run ${Math.min(...totals)} to ${Math.max(...totals)}.`;
 }
 
 // What this phone saw last time, straight away; then the latest from the app
-const last = store.get('wc-field');
+const last = store.get('wc-field2');
 if (last?.players?.length) { try { show(last); } catch (e) { /* redrawn below */ } }
 load().catch(e => {
   console.error('Live details not loaded:', e);
