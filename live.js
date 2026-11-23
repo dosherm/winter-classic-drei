@@ -159,13 +159,28 @@ const MUL = [[0, 0, 0, 0], [0, 1, 2, 3], [0, 2, 3, 1], [0, 3, 1, 2]];
 const perms4 = (() => { const out = []; const go = (a, rest) => rest.length ? rest.forEach((x, i) => go([...a, x], rest.filter((_, j) => j !== i))) : out.push(a); go([], [0, 1, 2, 3]); return out; })();
 const SLOPE_SETS = [[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]];
 
+// Players who must be teammates on one of the three days (player ids)
+const TOGETHER = [
+  ['MhVvRwqjFDQk261EAZkV', 'NeyiBIiUfQow3T9R3t1l'], // Dan Sherman + Bret Bologna
+  ['MhVvRwqjFDQk261EAZkV', '5h10jyCYkaV8MSGgunw7'], // Dan Sherman + Ron Carraher
+  ['MhVvRwqjFDQk261EAZkV', 'HVvKttssoxeZucwrBabU'], // Dan Sherman + Ricky Carraher
+];
+
 function proposeTeams(flights) {
   const ch = flights.map(f => f.map(p => p.ch ?? 0));
   const avg = ch.flat().reduce((s, n) => s + n, 0) / 4;
+  const ids = flights.map(f => f.map(p => p.id));
+  const wanted = TOGETHER.filter(pair => pair.every(id => ids.flat().includes(id)));
+  // Every wanted pair on the same team on some day
+  const keeps = (order, slopes) => wanted.every(([a, b]) => slopes.some(m => [0, 1, 2, 3].some(t => {
+    const team = [0, 1, 2, 3].map(x => ids[x][order[x][MUL[m][x] ^ t]]);
+    return team.includes(a) && team.includes(b);
+  })));
   let best = null;
   for (const pB of perms4) for (const pC of perms4) for (const pD of perms4) {
     const order = [[0, 1, 2, 3], pB, pC, pD];
     for (const slopes of SLOPE_SETS) {
+      if (!keeps(order, slopes)) continue;
       let lo = Infinity, hi = -Infinity, sq = 0;
       for (const m of slopes) for (let b = 0; b < 4; b++) {
         let s = 0;
@@ -176,6 +191,7 @@ function proposeTeams(flights) {
       if (!best || score < best.score) best = { score, order, slopes };
     }
   }
+  if (!best && wanted.length) { TOGETHER.length = 0; return proposeTeams(flights); } // can't be done: drop the wish
   return best.slopes.map(m => [0, 1, 2, 3].map(b => [0, 1, 2, 3].map(x => flights[x][best.order[x][MUL[m][x] ^ b]]))
     .sort((a, b) => a[0].hi - b[0].hi));
 }
@@ -203,7 +219,7 @@ function showTeams(players) {
   [...$('team-tabs').children].forEach((b, i) => b.addEventListener('click', () => draw(i)));
   draw(0);
   $('team-note').textContent = `Team totals (course handicaps) run ${Math.min(...totals)} to ${Math.max(...totals)}. `
-    + 'Worked out from the field as it stands, so they can shift while indexes move until November 23.';
+    + 'Handicaps locked on November 23. Dan Sherman plays once each with Ricky Carraher, Ron Carraher and Bret Bologna.';
 }
 
 // What this phone saw last time, straight away; then the latest from the app
